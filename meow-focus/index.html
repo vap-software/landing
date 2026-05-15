@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meow Focus — Healthy Break Reminder</title>
+  <meta name="description" content="A Chrome Extension that reminds you to take healthy breaks with a cute fullscreen cat overlay. Configurable, offline, and privacy-first." />
+  <meta name="keywords" content="chrome extension, pomodoro, break reminder, focus timer, productivity, cat, healthy breaks, work timer" />
+  <meta name="author" content="Meow Focus" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://vap-software.github.io/meow-focus/" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type"        content="website" />
+  <meta property="og:url"         content="https://vap-software.github.io/meow-focus/" />
+  <meta property="og:title"       content="Meow Focus — Healthy Break Reminder" />
+  <meta property="og:description" content="A Chrome Extension that reminds you to take healthy breaks with a cute fullscreen cat overlay. Configurable, offline, and privacy-first." />
+  <meta property="og:image"       content="https://vap-software.github.io/landing/meow-focus/assets/marquee_tile.png" />
+  <meta property="og:image:width"  content="1400" />
+  <meta property="og:image:height" content="560" />
+  <meta property="og:locale"      content="en_US" />
+  <meta property="og:locale:alternate" content="vi_VN" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:url"         content="https://vap-software.github.io/meow-focus/" />
+  <meta name="twitter:title"       content="Meow Focus — Healthy Break Reminder" />
+  <meta name="twitter:description" content="A Chrome Extension that reminds you to take healthy breaks with a cute fullscreen cat overlay. Configurable, offline, and privacy-first." />
+  <meta name="twitter:image"       content="https://vap-software.github.io/landing/meow-focus/assets/marquee_tile.png" />
+
+  <!-- Theme color for browser chrome -->
+  <meta name="theme-color" content="#FF6B35" />
+
+  <link rel="icon"       type="image/png" sizes="128x128" href="./assets/icon128.png" />
+  <link rel="icon"       type="image/png" sizes="32x32"   href="./assets/icon32.png" />
+  <link rel="icon"       type="image/png" sizes="16x16"   href="./assets/icon16.png" />
+  <link rel="apple-touch-icon"                             href="./assets/icon128.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;1,14..32,400&display=swap" rel="stylesheet" />
+  <style>
+    /* =============================================
+       CSS Variables
+    ============================================= */
+    :root {
+      --bg:          #FAFAF8;
+      --bg-card:     #FFFFFF;
+      --bg-section:  #F4F3F0;
+      --text:        #1a1a1a;
+      --text-muted:  #6b7280;
+      --border:      #e5e7eb;
+      --accent:      #FF6B35;
+      --accent-h:    #e85d2a;
+      --accent-soft: rgba(255,107,53,0.10);
+      --radius:      1rem;
+      --shadow:      0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+      --shadow-lg:   0 8px 40px rgba(0,0,0,0.10);
+    }
+    [data-theme="dark"] {
+      --bg:          #0d0d0f;
+      --bg-card:     #18181b;
+      --bg-section:  #111113;
+      --text:        #f4f4f5;
+      --text-muted:  #a1a1aa;
+      --border:      #27272a;
+      --accent:      #FF8C5A;
+      --accent-h:    #ff7a42;
+      --accent-soft: rgba(255,140,90,0.12);
+      --shadow:      0 1px 3px rgba(0,0,0,0.3),  0 4px 16px rgba(0,0,0,0.2);
+      --shadow-lg:   0 8px 40px rgba(0,0,0,0.45);
+    }
+
+    /* =============================================
+       Reset & Base
+    ============================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: background 0.25s, color 0.25s;
+      -webkit-font-smoothing: antialiased;
+    }
+    img { display: block; }
+    a { color: inherit; }
+
+    /* =============================================
+       Utilities
+    ============================================= */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    section { padding: 5.5rem 0; }
+
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+    }
+    .section-title {
+      font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+      margin-bottom: 0.9rem;
+    }
+    .section-sub {
+      font-size: 1rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    /* =============================================
+       Nav
+    ============================================= */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      background: color-mix(in srgb, var(--bg) 85%, transparent);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.25s;
+    }
+    .nav-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--text);
+      flex-shrink: 0;
+    }
+    .nav-logo img {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.125rem;
+      list-style: none;
+    }
+    .nav-links a {
+      text-decoration: none;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.5rem;
+      transition: color 0.15s, background 0.15s;
+    }
+    .nav-links a:hover { color: var(--text); background: var(--accent-soft); }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .lang-toggle {
+      display: flex;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+    .lang-btn {
+      padding: 0.28rem 0.75rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+      letter-spacing: 0.02em;
+    }
+    .lang-btn.active {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 18px;
+    }
+    .btn-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      transition: color 0.15s, background 0.15s, border-color 0.15s;
+    }
+    .btn-icon:hover { color: var(--accent); background: var(--accent-soft); border-color: var(--accent); }
+
+    /* =============================================
+       Buttons
+    ============================================= */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--accent);
+      color: #fff;
+      padding: 0.7rem 1.75rem;
+      border-radius: 2rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+      box-shadow: 0 4px 20px rgba(255,107,53,0.35);
+      font-family: inherit;
+    }
+    .btn-primary:hover  { background: var(--accent-h); transform: translateY(-2px); box-shadow: 0 6px 24px rgba(255,107,53,0.45); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--bg-card);
+      color: var(--text);
+      padding: 0.7rem 1.75rem;
+      border-radius: 2rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s, transform 0.12s;
+      font-family: inherit;
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+    .btn-kofi {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: #FF5E5B;
+      color: #fff;
+      padding: 0.7rem 1.75rem;
+      border-radius: 2rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+      box-shadow: 0 4px 20px rgba(255,94,91,0.3);
+      font-family: inherit;
+    }
+    .btn-kofi:hover { background: #e04e4b; transform: translateY(-2px); box-shadow: 0 6px 24px rgba(255,94,91,0.4); }
+    .btn-kofi:active { transform: translateY(0); }
+    .btn-kofi img { height: 18px; width: auto; border-radius: 0; }
+
+    /* =============================================
+       Hero
+    ============================================= */
+    #hero {
+      padding: 5.5rem 0 4rem;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-soft);
+      border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent);
+      padding: 0.35rem 1rem;
+      border-radius: 20px;
+      margin-bottom: 2rem;
+    }
+    .hero-cat-wrap {
+      width: 160px;
+      height: 160px;
+      margin: 0 auto 2.25rem;
+      border-radius: 50%;
+      background: var(--bg-section);
+      border: 3px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      animation: float 3.5s ease-in-out infinite;
+    }
+    .hero-cat-wrap img {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-9px); }
+    }
+    .hero-title {
+      font-size: clamp(2.2rem, 6vw, 3.75rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.035em;
+      margin-bottom: 1.25rem;
+    }
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      max-width: 520px;
+      margin: 0 auto 2.75rem;
+      line-height: 1.75;
+    }
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    /* =============================================
+       Features
+    ============================================= */
+    #features .section-header {
+      text-align: center;
+      margin-bottom: 3.25rem;
+    }
+    #features .section-header .section-sub { max-width: 480px; margin: 0 auto; }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1.25rem;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem 1.6rem;
+      transition: box-shadow 0.22s, border-color 0.22s, transform 0.22s;
+    }
+    .feature-card:hover {
+      box-shadow: var(--shadow-lg);
+      border-color: var(--accent);
+      transform: translateY(-3px);
+    }
+    .feature-icon { font-size: 2rem; margin-bottom: 1rem; }
+    .feature-title { font-size: 1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .feature-desc  { font-size: 0.875rem; color: var(--text-muted); line-height: 1.65; }
+
+    /* =============================================
+       How It Works
+    ============================================= */
+    #how { background: var(--bg-section); }
+    .how-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+    .steps { display: flex; flex-direction: column; gap: 2.25rem; }
+    .step  { display: flex; gap: 1.25rem; align-items: flex-start; }
+    .step-num {
+      flex-shrink: 0;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.88rem;
+      letter-spacing: -0.01em;
+    }
+    .step-title { font-weight: 700; font-size: 1rem; margin-bottom: 0.35rem; }
+    .step-desc  { font-size: 0.875rem; color: var(--text-muted); line-height: 1.65; }
+
+    .how-visual {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .how-visual-inner {
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+    .how-visual-inner img {
+      width: 180px;
+      height: 180px;
+      object-fit: contain;
+    }
+
+    /* =============================================
+       Privacy
+    ============================================= */
+    #privacy .section-header {
+      text-align: center;
+      margin-bottom: 3.25rem;
+    }
+    #privacy .section-header .section-sub { max-width: 460px; margin: 0 auto; }
+    .privacy-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 1rem;
+    }
+    .privacy-badge {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      transition: border-color 0.18s, box-shadow 0.18s;
+    }
+    .privacy-badge:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+    .pb-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .pb-title {
+      display: block;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 0.15rem;
+    }
+    .pb-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* =============================================
+       Screenshots
+    ============================================= */
+    #screenshots { background: var(--bg-section); }
+    #screenshots .section-header {
+      text-align: center;
+      margin-bottom: 3.25rem;
+    }
+    #screenshots .section-header .section-sub { max-width: 460px; margin: 0 auto; }
+    .screenshots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .screenshot-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      transition: box-shadow 0.22s, transform 0.22s;
+    }
+    .screenshot-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+    .screenshot-card img  { width: 100%; height: auto; }
+    .screenshot-caption {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 0.75rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* =============================================
+       Q&A
+    ============================================= */
+    #qa .section-header {
+      text-align: center;
+      margin-bottom: 3.25rem;
+    }
+    .faq-list {
+      max-width: 680px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .faq-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .faq-item.open { border-color: var(--accent); }
+    .faq-q {
+      width: 100%;
+      text-align: left;
+      padding: 1.1rem 1.5rem;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      transition: color 0.15s;
+      font-family: inherit;
+    }
+    .faq-q:hover { color: var(--accent); }
+    .faq-chevron {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      transition: transform 0.22s;
+      color: var(--text-muted);
+    }
+    .faq-item.open .faq-chevron { transform: rotate(180deg); color: var(--accent); }
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    .faq-a-inner {
+      padding: 0 1.5rem 1.25rem;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.75;
+    }
+
+    /* =============================================
+       Footer
+    ============================================= */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 0;
+    }
+    .footer-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .footer-logo img { width: 22px; height: 22px; border-radius: 4px; }
+    .footer-links { display: flex; gap: 1.5rem; list-style: none; }
+    .footer-links a {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-links a:hover { color: var(--accent); }
+    .footer-copy { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* =============================================
+       Scroll-reveal animation
+    ============================================= */
+    .reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* =============================================
+       Responsive
+    ============================================= */
+    @media (max-width: 860px) {
+      .how-inner       { grid-template-columns: 1fr; gap: 3rem; }
+      .how-visual      { display: none; }
+    }
+    @media (max-width: 640px) {
+      .nav-links  { display: none; }
+      .footer-inner { flex-direction: column; text-align: center; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==========================================
+       NAV
+  =========================================== -->
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-logo">
+        <img src="./assets/icon.png" alt="Meow Focus" />
+        Meow Focus
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#features" data-i18n="navFeatures">Features</a></li>
+        <li><a href="#how"      data-i18n="navHow">How it works</a></li>
+        <li><a href="#privacy"  data-i18n="navPrivacy">Privacy</a></li>
+        <li><a href="#qa"       data-i18n="navQA">Q&amp;A</a></li>
+      </ul>
+
+      <div class="nav-controls">
+        <div class="lang-toggle">
+          <button class="lang-btn active" data-lang="en">EN</button>
+          <button class="lang-btn"        data-lang="vi">VI</button>
+        </div>
+        <button class="btn-icon" id="themeToggle" aria-label="Toggle theme">
+          <!-- Sun icon (shown in dark mode) -->
+          <svg id="iconSun" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1"  x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22"   x2="5.64"  y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1"  y1="12" x2="3"  y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22"  y1="19.78" x2="5.64"  y2="18.36"/>
+            <line x1="18.36" y1="5.64"  x2="19.78" y2="4.22"/>
+          </svg>
+          <!-- Moon icon (shown in light mode) -->
+          <svg id="iconMoon" xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ==========================================
+       HERO
+  =========================================== -->
+  <section id="hero">
+    <div class="container">
+      <div class="hero-badge" data-i18n="heroBadge">🐾 Chrome Extension · Free</div>
+
+      <div class="hero-cat-wrap">
+        <img src="./assets/icon128.png" alt="Meow Focus mascot" />
+      </div>
+
+      <h1 class="hero-title" data-i18n="heroTitle">Keep working.<br />Don't forget to rest.</h1>
+
+      <p class="hero-sub" data-i18n="heroSub">
+        Meow Focus reminds you to take healthy breaks with a cute fullscreen cat overlay — configurable, offline, and privacy-first.
+      </p>
+
+      <div class="hero-cta">
+        <a href="#" class="btn-primary" data-i18n="heroCTA">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l3.057-3 11.943 12-11.943 12-3.057-3 9-9z"/></svg>
+          Add to Chrome
+        </a>
+        <a href="https://github.com/vapnguyen24/meow-focus" target="_blank" class="btn-ghost" data-i18n="heroGithub">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+        <a href="https://ko-fi.com/E2P41ZJ1W8" target="_blank" rel="noopener noreferrer" class="btn-kofi" data-i18n="heroKofi">
+          ☕ Support on Ko-fi
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       FEATURES
+  =========================================== -->
+  <section id="features">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label" data-i18n="featLabel">Features</p>
+        <h2 class="section-title" data-i18n="featTitle">Everything you need for healthy focus</h2>
+        <p class="section-sub" data-i18n="featSub">Simple, configurable, and 100% offline. No account needed.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card reveal">
+          <div class="feature-icon">⏱️</div>
+          <h3 class="feature-title" data-i18n="feat1Title">Pomodoro Timer</h3>
+          <p class="feature-desc" data-i18n="feat1Desc">Configurable work and break durations. Persists across page reloads and browser restarts using timestamp-based calculations.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">🐱</div>
+          <h3 class="feature-title" data-i18n="feat2Title">Break Overlay</h3>
+          <p class="feature-desc" data-i18n="feat2Desc">A fullscreen cat overlay appears when it's time to rest. Gentle, non-intrusive, and always dismissable with Skip or Snooze.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">🌐</div>
+          <h3 class="feature-title" data-i18n="feat3Title">Site Whitelist</h3>
+          <p class="feature-desc" data-i18n="feat3Desc">Only track time on selected websites like GitHub, Notion, or Figma. Every other site is completely ignored.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">🖼️</div>
+          <h3 class="feature-title" data-i18n="feat4Title">Custom Media</h3>
+          <p class="feature-desc" data-i18n="feat4Desc">Upload your own GIF, MP4, PNG, or WebP to display during breaks. Your break, your vibe.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       HOW IT WORKS
+  =========================================== -->
+  <section id="how">
+    <div class="container">
+      <div class="how-inner">
+        <div>
+          <p class="section-label reveal" data-i18n="howLabel">How it works</p>
+          <h2 class="section-title reveal" data-i18n="howTitle">Up and running in minutes</h2>
+          <div class="steps">
+            <div class="step reveal">
+              <div class="step-num">01</div>
+              <div>
+                <h3 class="step-title" data-i18n="step1Title">Add your sites</h3>
+                <p class="step-desc"   data-i18n="step1Desc">Open the extension popup and add the websites where you work — github.com, notion.so, figma.com, etc.</p>
+              </div>
+            </div>
+            <div class="step reveal">
+              <div class="step-num">02</div>
+              <div>
+                <h3 class="step-title" data-i18n="step2Title">Set your timer</h3>
+                <p class="step-desc"   data-i18n="step2Desc">Choose your work duration (default 25 min) and break duration (default 5 min). Classic Pomodoro, but cuter.</p>
+              </div>
+            </div>
+            <div class="step reveal">
+              <div class="step-num">03</div>
+              <div>
+                <h3 class="step-title" data-i18n="step3Title">Start working</h3>
+                <p class="step-desc"   data-i18n="step3Desc">Hit "Start Working" and focus. When time's up, a cat will remind you it's break time — whether you like it or not.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="how-visual">
+          <div class="how-visual-inner">
+            <img src="./assets/dancing-cat-dance.gif" alt="Cat dancing" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       PRIVACY
+  =========================================== -->
+  <section id="privacy">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label" data-i18n="privLabel">Privacy</p>
+        <h2 class="section-title" data-i18n="privTitle">Zero data. Full trust.</h2>
+        <p class="section-sub" data-i18n="privSub">Meow Focus runs entirely in your browser. No servers, no tracking, no surprises.</p>
+      </div>
+      <div class="privacy-grid">
+        <div class="privacy-badge reveal">
+          <div class="pb-icon">🔒</div>
+          <div>
+            <span class="pb-title" data-i18n="priv1Title">No Tracking</span>
+            <span class="pb-desc"  data-i18n="priv1Desc">Zero analytics or telemetry</span>
+          </div>
+        </div>
+        <div class="privacy-badge reveal">
+          <div class="pb-icon">📵</div>
+          <div>
+            <span class="pb-title" data-i18n="priv2Title">No Ads</span>
+            <span class="pb-desc"  data-i18n="priv2Desc">Completely ad-free experience</span>
+          </div>
+        </div>
+        <div class="privacy-badge reveal">
+          <div class="pb-icon">✈️</div>
+          <div>
+            <span class="pb-title" data-i18n="priv3Title">Works Offline</span>
+            <span class="pb-desc"  data-i18n="priv3Desc">No internet connection needed</span>
+          </div>
+        </div>
+        <div class="privacy-badge reveal">
+          <div class="pb-icon">💾</div>
+          <div>
+            <span class="pb-title" data-i18n="priv4Title">Local Storage Only</span>
+            <span class="pb-desc"  data-i18n="priv4Desc">All data stays on your device</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       SCREENSHOTS
+  =========================================== -->
+  <section id="screenshots">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label" data-i18n="ssLabel">Screenshots</p>
+        <h2 class="section-title" data-i18n="ssTitle">See it in action</h2>
+        <p class="section-sub"  data-i18n="ssSub">Clean, minimal popup. Fullscreen break overlay with your cat companion.</p>
+      </div>
+      <div class="screenshots-grid">
+        <div class="screenshot-card reveal">
+          <img src="./assets/screenshot_local.png" alt="Popup UI" />
+          <p class="screenshot-caption" data-i18n="ss1Cap">Extension Popup</p>
+        </div>
+        <div class="screenshot-card reveal">
+          <img src="./assets/screenshot_global_1.png" alt="Timer Settings" />
+          <p class="screenshot-caption" data-i18n="ss2Cap">Timer Settings</p>
+        </div>
+        <div class="screenshot-card reveal">
+          <img src="./assets/screenshot_global.png" alt="Break Overlay" />
+          <p class="screenshot-caption" data-i18n="ss3Cap">Break Overlay</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       Q&A
+  =========================================== -->
+  <section id="qa">
+    <div class="container">
+      <div class="section-header reveal">
+        <p class="section-label" data-i18n="qaLabel">Q&amp;A</p>
+        <h2 class="section-title" data-i18n="qaTitle">Frequently asked questions</h2>
+      </div>
+      <div class="faq-list" id="faqList"></div>
+    </div>
+  </section>
+
+  <!-- ==========================================
+       FOOTER
+  =========================================== -->
+  <footer>
+    <div class="footer-inner">
+      <a href="#" class="footer-logo">
+        <img src="./assets/icon.png" alt="Meow Focus" />
+        Meow Focus
+      </a>
+      <ul class="footer-links">
+        <li><a href="https://github.com/vap-software/landing/issues" target="_blank" data-i18n="footerIssues">Report an issue</a></li>
+        <!-- <li><a href="https://github.com/vapnguyen24/meow-focus" target="_blank" data-i18n="footerGithub">GitHub</a></li> -->
+        <li>
+          <a href="https://ko-fi.com/E2P41ZJ1W8" target="_blank" rel="noopener noreferrer" data-i18n="footerKofi" style="display:inline-flex;align-items:center;gap:0.35rem;">
+            ☕ Ko-fi
+          </a>
+        </li>
+      </ul>
+      <p class="footer-copy" data-i18n="footerCopy" id="footerCopy">© 2025 Meow Focus</p>
+    </div>
+  </footer>
+
+  <!-- ==========================================
+       SCRIPT
+  =========================================== -->
+  <script>
+    // ==========================================
+    // Translations
+    // ==========================================
+    const i18n = {
+      en: {
+        navFeatures: 'Features',
+        navHow:      'How it works',
+        navPrivacy:  'Privacy',
+        navQA:       'Q&amp;A',
+
+        heroBadge: '🐾 Chrome Extension · Free',
+        heroTitle: 'Keep working.<br />Don\'t forget to rest.',
+        heroSub:   'Meow Focus reminds you to take healthy breaks with a cute fullscreen cat overlay — configurable, offline, and privacy-first.',
+        heroCTA:   '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l3.057-3 11.943 12-11.943 12-3.057-3 9-9z"/></svg> Add to Chrome',
+        heroGithub:'<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> GitHub',
+        heroKofi:  '☕ Support on Ko-fi',
+
+        featLabel: 'Features',
+        featTitle: 'Everything you need for healthy focus',
+        featSub:   'Simple, configurable, and 100% offline. No account needed.',
+        feat1Title: 'Pomodoro Timer',
+        feat1Desc:  'Configurable work and break durations. Persists across page reloads and browser restarts using timestamp-based calculations.',
+        feat2Title: 'Break Overlay',
+        feat2Desc:  'A fullscreen cat overlay appears when it\'s time to rest. Gentle, non-intrusive, and always dismissable with Skip or Snooze.',
+        feat3Title: 'Site Whitelist',
+        feat3Desc:  'Only track time on selected websites like GitHub, Notion, or Figma. Every other site is completely ignored.',
+        feat4Title: 'Custom Media',
+        feat4Desc:  'Upload your own GIF, MP4, PNG, or WebP to display during breaks. Your break, your vibe.',
+
+        howLabel:  'How it works',
+        howTitle:  'Up and running in minutes',
+        step1Title: 'Add your sites',
+        step1Desc:  'Open the extension popup and add the websites where you work — github.com, notion.so, figma.com, etc.',
+        step2Title: 'Set your timer',
+        step2Desc:  'Choose your work duration (default 25 min) and break duration (default 5 min). Classic Pomodoro, but cuter.',
+        step3Title: 'Start working',
+        step3Desc:  'Hit "Start Working" and focus. When time\'s up, a cat will remind you it\'s break time — whether you like it or not.',
+
+        privLabel: 'Privacy',
+        privTitle: 'Zero data. Full trust.',
+        privSub:   'Meow Focus runs entirely in your browser. No servers, no tracking, no surprises.',
+        priv1Title: 'No Tracking',    priv1Desc: 'Zero analytics or telemetry',
+        priv2Title: 'No Ads',         priv2Desc: 'Completely ad-free experience',
+        priv3Title: 'Works Offline',  priv3Desc: 'No internet connection needed',
+        priv4Title: 'Local Storage Only', priv4Desc: 'All data stays on your device',
+
+        ssLabel: 'Screenshots',
+        ssTitle: 'See it in action',
+        ssSub:   'Clean, minimal popup. Fullscreen break overlay with your cat companion.',
+        ss1Cap: 'Extension Popup',
+        ss2Cap: 'Timer Settings',
+        ss3Cap: 'Break Overlay',
+
+        qaLabel: 'Q&amp;A',
+        qaTitle: 'Frequently asked questions',
+
+        footerIssues: 'Report an issue',
+        footerGithub: 'GitHub',
+        footerKofi:   '☕ Ko-fi',
+        footerCopy:   '© 2025 Meow Focus · Free &amp; open source',
+
+        faqs: [
+          { q: 'Is it free?',
+            a: 'Yes, completely free. No payment, no subscription, no catch.' },
+          { q: 'Does it work on all websites?',
+            a: 'Only on websites you add to the whitelist. This is intentional — you\'re in full control of what gets tracked.' },
+          { q: 'Does it collect any data?',
+            a: 'No. Everything stays in your browser\'s local storage. No servers, no analytics, no tracking whatsoever.' },
+          { q: 'Can I use my own GIF or animation?',
+            a: 'Yes! Go to the Media tab in the popup and upload any GIF, MP4, PNG, JPG, or WebP file (max 8 MB).' },
+          { q: 'What happens if I close the browser?',
+            a: 'Your session state is persisted using timestamps. When you reopen the browser and visit a tracked site, Meow Focus resumes from where it left off.' },
+          { q: 'Can I skip or snooze the break?',
+            a: 'Yes. You can skip the break entirely or snooze it for 5 minutes. Snooze is limited per session to keep you honest 😸' },
+          { q: 'Which browsers are supported?',
+            a: 'Currently Chrome and Chromium-based browsers (Edge, Brave, Arc, etc.). Firefox support is not planned yet but may come in the future.' },
+        ]
+      },
+
+      vi: {
+        navFeatures: 'Tính năng',
+        navHow:      'Cách dùng',
+        navPrivacy:  'Quyền riêng tư',
+        navQA:       'Hỏi đáp',
+
+        heroBadge: '🐾 Tiện ích Chrome · Miễn phí',
+        heroTitle: 'Làm việc chăm chỉ.<br />Đừng quên nghỉ ngơi.',
+        heroSub:   'Meow Focus nhắc bạn nghỉ giải lao lành mạnh với màn hình mèo dễ thương — tùy chỉnh được, hoạt động offline, và bảo mật tuyệt đối.',
+        heroCTA:   '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l3.057-3 11.943 12-11.943 12-3.057-3 9-9z"/></svg> Thêm vào Chrome',
+        heroGithub:'<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> GitHub',
+        heroKofi:  '☕ Ủng hộ trên Ko-fi',
+
+        featLabel: 'Tính năng',
+        featTitle: 'Tất cả những gì bạn cần để tập trung lành mạnh',
+        featSub:   'Đơn giản, tùy chỉnh được, và hoạt động 100% offline. Không cần tài khoản.',
+        feat1Title: 'Hẹn giờ Pomodoro',
+        feat1Desc:  'Tùy chỉnh thời gian làm việc và nghỉ ngơi. Lưu trạng thái qua các lần tải lại trang và khởi động lại trình duyệt bằng tính toán dựa trên timestamp.',
+        feat2Title: 'Overlay Nghỉ giải lao',
+        feat2Desc:  'Màn hình mèo toàn màn hình xuất hiện khi đến giờ nghỉ. Nhẹ nhàng, không cản trở, và luôn có thể tắt bằng nút Bỏ qua hoặc Hoãn.',
+        feat3Title: 'Danh sách trang web',
+        feat3Desc:  'Chỉ tính thời gian trên các trang bạn chọn như GitHub, Notion, Figma. Mọi trang khác đều bị bỏ qua hoàn toàn.',
+        feat4Title: 'Phương tiện tùy chỉnh',
+        feat4Desc:  'Tải lên GIF, MP4, PNG hoặc WebP của riêng bạn để hiển thị khi nghỉ. Nghỉ ngơi theo cách của bạn.',
+
+        howLabel:  'Cách dùng',
+        howTitle:  'Cài đặt và chạy trong vài phút',
+        step1Title: 'Thêm trang web',
+        step1Desc:  'Mở popup tiện ích và thêm các trang bạn làm việc — github.com, notion.so, figma.com, v.v.',
+        step2Title: 'Đặt hẹn giờ',
+        step2Desc:  'Chọn thời gian làm việc (mặc định 25 phút) và nghỉ (mặc định 5 phút). Pomodoro kinh điển, nhưng dễ thương hơn.',
+        step3Title: 'Bắt đầu làm việc',
+        step3Desc:  'Nhấn "Bắt đầu làm việc" và tập trung. Khi hết giờ, một chú mèo sẽ nhắc bạn nghỉ ngơi — dù bạn có muốn hay không.',
+
+        privLabel: 'Quyền riêng tư',
+        privTitle: 'Không dữ liệu. Tin tưởng hoàn toàn.',
+        privSub:   'Meow Focus chạy hoàn toàn trong trình duyệt của bạn. Không máy chủ, không theo dõi, không bất ngờ.',
+        priv1Title: 'Không theo dõi',       priv1Desc: 'Không có phân tích hay thu thập dữ liệu',
+        priv2Title: 'Không quảng cáo',      priv2Desc: 'Trải nghiệm hoàn toàn không quảng cáo',
+        priv3Title: 'Hoạt động offline',    priv3Desc: 'Không cần kết nối internet',
+        priv4Title: 'Chỉ lưu cục bộ',      priv4Desc: 'Tất cả dữ liệu ở lại trên thiết bị',
+
+        ssLabel: 'Ảnh chụp màn hình',
+        ssTitle: 'Xem hoạt động thực tế',
+        ssSub:   'Popup gọn gàng, tối giản. Overlay toàn màn hình với người bạn mèo đáng yêu.',
+        ss1Cap: 'Popup tiện ích',
+        ss2Cap: 'Cài đặt hẹn giờ',
+        ss3Cap: 'Overlay nghỉ ngơi',
+
+        qaLabel: 'Hỏi đáp',
+        qaTitle: 'Câu hỏi thường gặp',
+
+        footerIssues: 'Báo lỗi',
+        footerGithub: 'GitHub',
+        footerKofi:   '☕ Ko-fi',
+        footerCopy:   '© 2025 Meow Focus · Miễn phí &amp; mã nguồn mở',
+
+        faqs: [
+          { q: 'Có miễn phí không?',
+            a: 'Có, hoàn toàn miễn phí. Không thanh toán, không đăng ký, không điều kiện ẩn.' },
+          { q: 'Có hoạt động trên mọi trang web không?',
+            a: 'Chỉ trên các trang bạn thêm vào danh sách. Điều này có chủ ý — bạn kiểm soát hoàn toàn những gì được theo dõi.' },
+          { q: 'Có thu thập dữ liệu không?',
+            a: 'Không. Mọi thứ đều nằm trong bộ nhớ cục bộ của trình duyệt. Không máy chủ, không phân tích, không theo dõi.' },
+          { q: 'Tôi có thể dùng GIF hoặc hoạt ảnh riêng không?',
+            a: 'Có! Vào tab Phương tiện trong popup và tải lên GIF, MP4, PNG, JPG, hoặc WebP (tối đa 8 MB).' },
+          { q: 'Điều gì xảy ra nếu tôi đóng trình duyệt?',
+            a: 'Trạng thái phiên làm việc được lưu lại bằng timestamp. Khi bạn mở lại trình duyệt và truy cập trang đã theo dõi, Meow Focus tiếp tục từ nơi bạn dừng lại.' },
+          { q: 'Tôi có thể bỏ qua hoặc hoãn giờ nghỉ không?',
+            a: 'Có. Bạn có thể bỏ qua hoàn toàn hoặc hoãn 5 phút. Chức năng hoãn bị giới hạn mỗi phiên để giúp bạn duy trì kỷ luật 😸' },
+          { q: 'Trình duyệt nào được hỗ trợ?',
+            a: 'Hiện tại là Chrome và các trình duyệt Chromium (Edge, Brave, Arc, v.v.). Hỗ trợ Firefox chưa được lên kế hoạch nhưng có thể được thêm trong tương lai.' },
+        ]
+      }
+    };
+
+    let lang = 'en';
+
+    // ==========================================
+    // Apply translations
+    // ==========================================
+    function applyI18n(l) {
+      const t = i18n[l];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key] !== undefined) el.innerHTML = t[key];
+      });
+      document.documentElement.lang = l;
+      buildFAQ(l);
+    }
+
+    // ==========================================
+    // FAQ accordion
+    // ==========================================
+    function buildFAQ(l) {
+      const list = document.getElementById('faqList');
+      list.innerHTML = '';
+      i18n[l].faqs.forEach(({ q, a }) => {
+        const item = document.createElement('div');
+        item.className = 'faq-item reveal';
+        item.innerHTML = `
+          <button class="faq-q">
+            <span>${q}</span>
+            <svg class="faq-chevron" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                 fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+          <div class="faq-a"><div class="faq-a-inner">${a}</div></div>
+        `;
+        const btn = item.querySelector('.faq-q');
+        const ans = item.querySelector('.faq-a');
+        btn.addEventListener('click', () => {
+          const isOpen = item.classList.contains('open');
+          document.querySelectorAll('.faq-item.open').forEach(i => {
+            i.classList.remove('open');
+            i.querySelector('.faq-a').style.maxHeight = '0';
+          });
+          if (!isOpen) {
+            item.classList.add('open');
+            ans.style.maxHeight = ans.scrollHeight + 'px';
+          }
+        });
+        list.appendChild(item);
+        // trigger reveal for newly added faq items
+        requestAnimationFrame(() => observeReveal(item));
+      });
+    }
+
+    // ==========================================
+    // Language toggle
+    // ==========================================
+    document.querySelectorAll('.lang-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.dataset.lang === lang) return;
+        document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        lang = btn.dataset.lang;
+        applyI18n(lang);
+      });
+    });
+
+    // ==========================================
+    // Theme toggle
+    // ==========================================
+    const iconSun  = document.getElementById('iconSun');
+    const iconMoon = document.getElementById('iconMoon');
+
+    function setTheme(dark) {
+      if (dark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        iconSun.style.display  = '';
+        iconMoon.style.display = 'none';
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        iconSun.style.display  = 'none';
+        iconMoon.style.display = '';
+      }
+      localStorage.setItem('mf-theme', dark ? 'dark' : 'light');
+    }
+
+    document.getElementById('themeToggle').addEventListener('click', () => {
+      setTheme(document.documentElement.getAttribute('data-theme') !== 'dark');
+    });
+
+    // ==========================================
+    // Scroll-reveal
+    // ==========================================
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.12 });
+
+    function observeReveal(el) { io.observe(el); }
+    document.querySelectorAll('.reveal').forEach(observeReveal);
+
+    // ==========================================
+    // Init
+    // ==========================================
+    const saved = localStorage.getItem('mf-theme');
+    setTheme(saved === 'dark');
+    applyI18n('en');
+
+    // ==========================================
+    // Copyright year update
+    // ==========================================
+    document.getElementById('footerCopy').innerHTML = document.getElementById('footerCopy').innerHTML.replace('2025', new Date().getFullYear());
+  </script>
+</body>
+</html>
